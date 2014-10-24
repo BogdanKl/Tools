@@ -47,6 +47,8 @@ QString Translator::translate(QDomNode doc, QString const t, int mX, int mY)
 			result += parseRectangle(elem, t, mX, mY);
 		} else if (elem.nodeName() == "arc") {
 			result += parseArc(elem, t, mX, mY);
+		} else if (elem.nodeName() == "text") {
+			result += parseText(elem, t, mX, mY);
 		}
 		if ((!doc.hasChildNodes()) && doc.nodeName() == "picture")
 		{
@@ -104,7 +106,7 @@ QString Translator::parseLine(QDomElement elem, const QString t, int mX, int mY)
 	result += t+ QString("Line { \n");
 	int x1, y1, x2, y2;
 	int x1mX, y1mY, x2mX, y2mY;
-	qDebug() << "Line";
+	//qDebug() << "Line";
 	QString elemx1 = elem.attribute("x1");
 	QString elemy1 = elem.attribute("y1");
 	QString elemx2 = elem.attribute("x2");
@@ -133,11 +135,6 @@ QString Translator::parseLine(QDomElement elem, const QString t, int mX, int mY)
 	}
 	if (elemx2.at(elemx2.length()-1) != 'a') {
 		x2 = elemx2.toInt();
-		if(mX - x2 < penWidth.toInt())
-		{
-			qDebug() << "hm";
-			x2 -= (penWidth.toInt() + 1);
-		}
 		x2mX = gcd(x2, mX);
 		result += t + QString("\t") + QString("x2: ") + QString::number(x2 / x2mX) + QString(" * ") + QString("parent.width") + QString(" / ") +QString::number(mX / x2mX) + QString("\n");
 	} else {
@@ -253,6 +250,36 @@ QString Translator::parseImage(QDomElement elem, QString t)
 	result += t + QString("Image { \n")
 			+ t + QString("\t") +QString("source: ") + QString("\"")+ elem.attribute("file") +QString("\"") +QString("\n")
 			+ t + QString("}\n");
+	return result;
+}
+
+QString Translator::parseText(QDomElement elem, QString t, int mX, int mY)
+{
+	QString result = "";
+	int xmX, ymY;
+	QString  b, i, u;
+	b = elem.attribute(b) != "0" ? "false" : "true";
+	i = elem.attribute(i) != "0" ? "false" : "true";
+	u = elem.attribute(u) != "0" ? "false" : "true";
+	QString font_size = elem.attribute("font-size");
+	font_size = font_size.at(font_size.length() - 1) != 'a' ? font_size : font_size.remove(font_size.length() - 1, 1);
+	QString font_name = elem.attribute("font-name");
+	int x = elem.attribute("x1").toInt();
+	xmX = gcd(x, mX);
+	int y = elem.attribute("y1").toInt() - font_size.toInt();
+	ymY = gcd(y, mY);
+	result += t + QString("Text { \n")
+			//+ t + QString("\t") + QString("anchors.centerIn: parent") + QString("\n")
+			+ t + QString("\t") + QString("x: ") + QString::number(x/xmX) + QString(" * ") + QString("parent.width") + QString(" / ") + QString::number(mX / xmX) + QString("\n")
+			+ t + QString("\t") + QString("y: ") + QString::number(y/ymY) + QString(" * ") + QString("parent.height") + QString(" / ") + QString::number(mY / ymY) + QString("\n")
+			+ t + QString("\t") + QString("color: ") + QString("\"") + elem.attribute("font-fill") + QString("\"") + QString("\n")
+			+ t + QString("\t") + QString("text: ") +QString("\"") + elem.text() + QString("\"") + QString("\n")
+			+ t + QString("\t") + QString("font.family: ") + QString("\"") + font_name + QString("\"") + QString("\n")
+			+ t + QString("\t") + QString("font.pixrlSize: ") + font_size + QString("\n")
+			+ t + QString("\t") + QString("font.bold: ") + b + QString("\n")
+			+ t + QString("\t") + QString("font.italic: ") + i + QString("\n")
+			+ t + QString("\t") + QString("font.underline: ") + u + QString("\n")
+			+ t + QString("} \n");
 	return result;
 }
 
