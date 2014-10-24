@@ -268,6 +268,9 @@ QString Translator::parseText(QDomElement elem, QString t, int mX, int mY)
 	xmX = gcd(x, mX);
 	int y = elem.attribute("y1").toInt() - font_size.toInt();
 	ymY = gcd(y, mY);
+	int fs, fsmY;
+	fs = font_size.toInt();
+	fsmY = gcd(fs, mY);
 	result += t + QString("Text { \n")
 			//+ t + QString("\t") + QString("anchors.centerIn: parent") + QString("\n")
 			+ t + QString("\t") + QString("x: ") + QString::number(x/xmX) + QString(" * ") + QString("parent.width") + QString(" / ") + QString::number(mX / xmX) + QString("\n")
@@ -275,7 +278,7 @@ QString Translator::parseText(QDomElement elem, QString t, int mX, int mY)
 			+ t + QString("\t") + QString("color: ") + QString("\"") + elem.attribute("font-fill") + QString("\"") + QString("\n")
 			+ t + QString("\t") + QString("text: ") +QString("\"") + elem.text() + QString("\"") + QString("\n")
 			+ t + QString("\t") + QString("font.family: ") + QString("\"") + font_name + QString("\"") + QString("\n")
-			+ t + QString("\t") + QString("font.pixrlSize: ") + font_size + QString("\n")
+			+ t + QString("\t") + QString("font.pixelSize: ") + QString::number(fs / fsmY) + QString(" * ") + QString("parent.height") + QString(" / ") + QString::number(mY / fsmY) + QString("\n")
 			+ t + QString("\t") + QString("font.bold: ") + b + QString("\n")
 			+ t + QString("\t") + QString("font.italic: ") + i + QString("\n")
 			+ t + QString("\t") + QString("font.underline: ") + u + QString("\n")
