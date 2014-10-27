@@ -16,8 +16,8 @@ private:
 	QString parseRectangle(QDomElement elem, QString t, int mX, int mY);
 	QString parseArc(QDomElement elem, QString t, int mX, int mY);
 	QString parseText(QDomElement elem, QString t, int mX, int mY);
+	QString parseImage(QDomElement elem, QString t, int mX, int mY);
 	QString parseGraphics(QDomElement elem, QString const t);
-	QString parseImage(QDomElement elem, QString t);
 	int gcd(int a, int b);
 };
 
