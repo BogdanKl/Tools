@@ -49,6 +49,8 @@ QString Translator::translate(QDomNode doc, QString const t, int mX, int mY)
 			result += parseText(elem, t, mX, mY);
 		} else if (elem.nodeName() == "image") {
 			result += parseImage(elem, t, mX, mY);
+		} else if (elem.nodeName() == "path") {
+			result += parsePath(elem, t, mX, mY);
 		}
 		if ((!doc.hasChildNodes()) && doc.nodeName() == "picture")
 		{
@@ -115,28 +117,28 @@ QString Translator::parseLine(QDomElement elem, const QString t, int mX, int mY)
 	if (elemx1.at(elemx1.length()-1) != 'a') {
 		x1 = elemx1.toInt();
 		x1mX = gcd(x1, mX);
-		result += t + QString("\t") + QString("x1: ") + QString("1.0 * ") + QString::number(x1 / x1mX) + QString(" * ") + QString("parent.width") + QString(" / ") +QString::number(mX / x1mX) + QString("\n");
+		result += t + QString("\t") + QString("x1: ") + QString::number(x1 / x1mX) + QString(" * ") + QString("parent.width") + QString(" / ") +QString::number(mX / x1mX) + QString("\n");
 	} else {
 		result += t + QString("\t") + QString("x1: ") + elemx1.remove(elemx1.length()-1,1) + QString(" \n");
 	}
 	if (elemy1.at(elemy1.length()-1) != 'a') {
 		y1 = elemy1.toInt();
 		y1mY = gcd(y1, mY);
-		result += t + QString("\t") + QString("y1: ") + QString("1.0 * ") + QString::number(y1 / y1mY) + QString(" * ") + QString("parent.height") + QString(" / ") +QString::number(mY / y1mY) + QString("\n");
+		result += t + QString("\t") + QString("y1: ") + QString::number(y1 / y1mY) + QString(" * ") + QString("parent.height") + QString(" / ") +QString::number(mY / y1mY) + QString("\n");
 	} else {
 		result += t + QString("\t") + QString("y1: ") + elemy1.remove(elemy1.length()-1,1) + QString(" \n");
 	}
 	if (elemx2.at(elemx2.length()-1) != 'a') {
 		x2 = elemx2.toInt();
 		x2mX = gcd(x2, mX);
-		result += t + QString("\t") + QString("x2: ") + QString("1.0 * ") + QString::number(x2 / x2mX) + QString(" * ") + QString("parent.width") + QString(" / ") +QString::number(mX / x2mX) + QString("\n");
+		result += t + QString("\t") + QString("x2: ") + QString::number(x2 / x2mX) + QString(" * ") + QString("parent.width") + QString(" / ") +QString::number(mX / x2mX) + QString("\n");
 	} else {
 		result += t + QString("\t") + QString("x2: ") + elemx2.remove(elemx2.length()-1,1) + QString(" \n");
 	}
 	if (elemy2.at(elemy2.length()-1) != 'a') {
 		y2 = elemy2.toInt();
 		y2mY = gcd(y2, mY);
-		result += t + QString("\t") + QString("y2: ") + QString("1.0 * ") + QString::number(y2 / y2mY) + QString(" * ") + QString("parent.height") + QString(" / ") +QString::number(mY / y2mY) + QString("\n");
+		result += t + QString("\t") + QString("y2: ") + QString::number(y2 / y2mY) + QString(" * ") + QString("parent.height") + QString(" / ") +QString::number(mY / y2mY) + QString("\n");
 	} else {
 		result += t + QString("\t") + QString("y2: ") + elemy2.remove(elemy2.length()-1,1) + QString(" \n");
 	}
@@ -239,12 +241,12 @@ QString Translator::parseImage(QDomElement elem, QString t, int mX, int mY)
 	int x2mX = gcd(x2, mX);
 	int y2mY = gcd(y2, mY);
 	QString result = "";
-	result += t + QString("Image { \n")
+	result += t + QString("Picture { \n")
 			+ t + QString("\t") + QString("x1: ") + QString::number(x1 / x1mX) + QString(" * ") + QString("parent.width") + QString(" / ") + QString::number(mX / x1mX) + QString("\n")
 			+ t + QString("\t") + QString("y1: ") + QString::number(y1 / y1mY) + QString(" * ") + QString("parent.height") + QString(" / ") + QString::number(mY / y1mY) + QString("\n")
-			+ t + QString("\t") + QString("x2: ") + QString::number(x2 / x2mX) + QString(" * ") + QString("parent.width") + QString(" / ") + QString::number(mX / x2mX) + QString("\n")
-			+ t + QString("\t") + QString("y2: ") + QString::number(y2 / y2mY) + QString(" * ") + QString("parent.height") + QString(" / ") + QString::number(mY / y2mY) + QString("\n")
-			+ t + QString("\t") +QString("source: ") + QString("\"")+ elem.attribute("name") +QString("\"") +QString("\n")
+			+ t + QString("\t") + QString("x2: ") + QString::number(x2 / x2mX) + QString(" * ") + QString("parent.width") + QString(" / ") +QString::number(mX / x2mX) + QString("\n")
+			+ t + QString("\t") + QString("y2: ") + QString::number(y2 / y2mY) + QString(" * ") + QString("parent.height") + QString(" / ") +QString::number(mY / y2mY) + QString("\n")
+			+ t + QString("\t") + QString("source: ") + QString("\"") + elem.attribute("name") +QString("\"") +QString("\n")
 			+ t + QString("}\n");
 	return result;
 }
@@ -279,6 +281,26 @@ QString Translator::parseText(QDomElement elem, QString t, int mX, int mY)
 			+ t + QString("\t") + QString("font.italic: ") + i + QString("\n")
 			+ t + QString("\t") + QString("font.underline: ") + u + QString("\n")
 			+ t + QString("} \n");
+	return result;
+}
+
+QString Translator::parsePath(QDomElement elem, QString t, int mX, int mY)
+{
+	QString result = t + "Path { \n";
+	QString color = elem.attribute("fill") != "" ? elem.attribute("fill") : "black";
+	QString width = elem.attribute("stroke-width") != "" ? elem.attribute("stroke-width") : "1";
+	QString style = elem.attribute("stroke-style") != "" ? elem.attribute("stroke-style") : "solid";
+	QString stroke = elem.attribute("stroke") != "" ? elem.attribute("stroke") : "transparent";
+
+	QString d = elem.attribute("d");
+	result += t + QString("\t") + QString("fill: ") + QString("\"") + color + QString("\"") + QString("\n")
+		+ t + QString("\t") + QString("style: ") + QString("\"") + style + QString("\"") + QString("\n")
+		+ t + QString("\t") + QString("width: ") + width + QString("\n")
+		+ t + QString("\t") + QString("sizex: ") + QString("parent.width") + QString("\n")
+		+ t + QString("\t") + QString("sizey: ") + QString("parent.height") + QString("\n")
+		+ t + QString("\t") + QString("color: ") + QString("\"") + stroke + QString("\"") + QString("\n")
+		+ t + QString("\t") + QString("str: ") + QString("\"") + d + QString("\"") +QString("\n")
+		+ t + QString("} \n");
 	return result;
 }
 
