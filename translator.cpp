@@ -34,13 +34,13 @@ QString Translator::translate(QDomNode doc, QString const t, int mX, int mY)
 			resfile.open(QIODevice::WriteOnly | QIODevice::Text);
 			resfile.write(QString("import QtQuick 1.0 \n").toLatin1());
 			resfile.write(QString("import CustomComponents 1.0 \n").toLatin1());
-			resfile.write((translate(doc.firstChild(), "", mX, mY)).toLatin1());
+			resfile.write((translate(doc.firstChild(), "", mX, mY)).toUtf8());
 		} else if (elem.nodeName() == "edge") {
-			QFile resfile("result/"+elem.attribute("name")+"EdgeClass.qml");
+			/*QFile resfile("result/"+elem.attribute("name")+"EdgeClass.qml");
 			resfile.open(QIODevice::WriteOnly | QIODevice::Text);
 			resfile.write(QString("import QtQuick 1.0 \n").toLatin1());
 			resfile.write(QString("import CustomComponents 1.0 \n").toLatin1());
-			resfile.write((translate(doc.firstChild(), "", mX, mY)).toLatin1());
+			resfile.write((translate(doc.firstChild(), "", mX, mY)).toLatin1());*/
 		} else if (elem.nodeName() == "rectangle") {
 			result += parseRectangle(elem, t, mX, mY);
 		} else if (elem.nodeName() == "arc") {
@@ -51,6 +51,10 @@ QString Translator::translate(QDomNode doc, QString const t, int mX, int mY)
 			result += parseImage(elem, t, mX, mY);
 		} else if (elem.nodeName() == "path") {
 			result += parsePath(elem, t, mX, mY);
+		} else if (elem.nodeName() == "g") {
+			result += parseG(elem, t);
+		} else if (elem.nodeName() == "polygon") {
+			result += parsePolygon(elem, t, mX, mY);
 		}
 		if ((!doc.hasChildNodes()) && doc.nodeName() == "picture")
 		{
@@ -300,6 +304,44 @@ QString Translator::parsePath(QDomElement elem, QString t, int mX, int mY)
 		+ t + QString("\t") + QString("sizey: ") + QString("parent.height") + QString("\n")
 		+ t + QString("\t") + QString("color: ") + QString("\"") + stroke + QString("\"") + QString("\n")
 		+ t + QString("\t") + QString("str: ") + QString("\"") + d + QString("\"") +QString("\n")
+		+ t + QString("} \n");
+	return result;
+}
+
+QString Translator::parseG(QDomElement elem, const QString t)
+{
+	QString result = t + "Polygon {";
+	result += t + QString("\t") ;
+	qDebug() << " g " << elem.attribute("n");
+	return "";
+}
+
+QString Translator::parsePolygon(QDomElement elem, const QString t, int mX, int mY)
+{
+	QString x = "";
+	QString y = "";
+	QString color = elem.attribute("fill") != "" ? elem.attribute("fill") : "black";
+	QString width = elem.attribute("stroke-width") != "" ? elem.attribute("stroke-width") : "1";
+	QString style = elem.attribute("stroke-style") != "" ? elem.attribute("stroke-style") : "solid";
+	QString stroke = elem.attribute("stroke") != "" ? elem.attribute("stroke") : "transparent";
+
+	int n = elem.attribute("n").toInt();
+	for(int i = 1; i < n; i++) {
+		x += elem.attribute("x" + QString::number(i)) + QString(",");
+		y += elem.attribute("y" + QString::number(i)) + QString(",");
+	}
+	x += elem.attribute("x" + QString::number(n));
+	y += elem.attribute("y" + QString::number(n));
+	qDebug() << x.split(",");
+	QString result = t + "Polygon { \n";
+	result += t + QString("\t") + QString("fill: ") + QString("\"") + color + QString("\"") + QString("\n")
+		+ t + QString("\t") + QString("style: ") + QString("\"") + style + QString("\"") + QString("\n")
+		+ t + QString("\t") + QString("width: ") + width + QString("\n")
+		+ t + QString("\t") + QString("color: ") + QString("\"") + stroke + QString("\"") + QString("\n")
+		+ t + QString("\t") + QString("sizex: ") + QString("parent.width") + QString("\n")
+		+ t + QString("\t") + QString("sizey: ") + QString("parent.height") + QString("\n")
+		+ t + QString("\t") + QString("x: ") + QString("\"") + x + QString("\"") + QString("\n")
+		+ t + QString("\t") + QString("y: ") + QString("\"") + y + QString("\"") + QString("\n")
 		+ t + QString("} \n");
 	return result;
 }
