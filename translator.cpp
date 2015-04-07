@@ -55,6 +55,22 @@ QString Translator::translate(QDomNode doc, QString const t, int mX, int mY)
 			result += parseG(elem, t);
 		} else if (elem.nodeName() == "polygon") {
 			result += parsePolygon(elem, t, mX, mY);
+		} else if (elem.nodeName() == "curve") {
+			result += parseCurve(elem, t ,mX, mY);
+			QDomNode docx = doc.firstChild();
+			qDebug() << docx.nodeName();
+			result += parseStart(docx.toElement(), t);
+			docx = docx.nextSibling();
+				qDebug() << docx.nodeName();
+			result += parseEnd(docx.toElement(), t);
+			docx =docx.nextSibling();
+				qDebug() << docx.nodeName();
+			result += parseCtrl(docx.toElement(), t);
+			if (doc.lastChild().nodeName() == "showIf")
+			{
+				result += parseShowIf(doc.lastChildElement(), t);
+			}
+			result += t + QString("}\n");
 		}
 		if ((!doc.hasChildNodes()) && doc.nodeName() == "picture")
 		{
@@ -77,7 +93,7 @@ QString Translator::parseEllipse(QDomElement elem, QString const t, int mX, int 
 	QString elemx2 = elem.attribute("x2");
 	QString elemy2 = elem.attribute("y2");
 	QString color = elem.attribute("stroke") != "" ? (QString("\"") + elem.attribute("stroke") + QString("\"")) : (QString("\"") + "black" +QString("\""));
-	QString style = elem.attribute("fill-style") != "" ? (QString("\"") +elem.attribute("fill-style") + QString("\"")): (QString("\"")+"solid" +QString("\""));
+	QString style = elem.attribute("stroke-style") != "" ? (QString("\"") +elem.attribute("stroke-style") + QString("\"")) : (QString("\"")+"solid" +QString("\""));
 	QString penWidth = elem.attribute("stroke-width") != "" ? elem.attribute("stroke-width") : "1";
 	int x1, y1, x2, y2, width, height;
 	int x1mX, y1mY, widthmX, heightmY;
@@ -93,8 +109,11 @@ QString Translator::parseEllipse(QDomElement elem, QString const t, int mX, int 
 	x1mX = gcd(x1, mX - penWidth.toInt());
 	y1mY = gcd(y1, mY - penWidth.toInt());
 	heightmY = gcd(height, mY);
-	result += t + QString("Ellipse { \n")
-			+ t + QString("\t") + QString("x: ") + QString::number(x1/x1mX) + QString(" * ") + QString("parent.width") + QString(" / ") + QString::number(mX / x1mX) + QString("\n")
+	result += t + QString("Ellipse { \n");
+	if (elem.hasChildNodes()){
+		result += parseShowIf(elem.firstChildElement(), t);
+	}
+	result += t + QString("\t") + QString("x: ") + QString::number(x1/x1mX) + QString(" * ") + QString("parent.width") + QString(" / ") + QString::number(mX / x1mX) + QString("\n")
 			+ t + QString("\t") +QString("y: ") + QString::number(y1/y1mY) + QString(" * ") + QString("parent.height") + QString(" / ") + QString::number(mY / y1mY) + QString("\n")
 			+ t + QString("\t") + QString("width: ") + QString::number(width/widthmX)+ QString(" * ") + QString("parent.width") + QString(" / ") + QString::number(mX / widthmX) + QString("\n")
 			+ t + QString("\t") + QString("height: ") +  QString::number(height/heightmY)+ QString(" * ") + QString("parent.height") + QString(" / ") + QString::number(mY / heightmY) + QString("\n")
@@ -146,8 +165,11 @@ QString Translator::parseLine(QDomElement elem, const QString t, int mX, int mY)
 	} else {
 		result += t + QString("\t") + QString("y2: ") + elemy2.remove(elemy2.length()-1,1) + QString(" \n");
 	}
-	QString color = elem.attribute("fill") != "" ? (QString("\"") + elem.attribute("fill") + QString("\"")) : (QString("\"") + "black" +QString("\""));
+	QString color = elem.attribute("stroke") != "" ? (QString("\"") + elem.attribute("stroke") + QString("\"")) : (QString("\"") + "black" +QString("\""));
 	QString style = elem.attribute("stroke-style") != "" ? (QString("\"") +elem.attribute("stroke-style") + QString("\"")): (QString("\"")+"solid" +QString("\""));
+	if (elem.hasChildNodes()){
+		result += parseShowIf(elem.firstChildElement(), t);
+	}
 	result += t + QString("\t") + QString("color: ") + color +QString("\n")
 		+ t + QString("\t") + QString("style: ") + style + QString("\n")
 		+ t + QString("\t") + QString("width: ") + penWidth +QString("\n")
@@ -159,6 +181,7 @@ QString Translator::parseGraphics(QDomElement elem, const QString t)
 {
 	QString result = "";
 	result += t + QString("Rectangle { \n")
+			+ t + QString("\t") + QString("property string ids: ") + QString("\"") + QString("\"\n")
 			+ t + QString("\t") + QString("width: ") + elem.attribute("sizex") + QString("; height: ") + elem.attribute("sizey") + QString("\n")
 			+ t + QString("\t") + QString("color: ") +QString("\"") +QString("transparent") + QString("\"") + QString("\n");
 	return result;
@@ -221,8 +244,11 @@ QString Translator::parseArc(QDomElement elem, QString t, int mX, int mY)
 	x2mX = gcd(x2, mX);
 	y2 = elemy2.at(elemy2.length()-1) != 'a' ? elemy2.toInt() : elemy2.remove(elemy2.length()-1, 1).toInt();
 	y2mY = gcd(y2, mY);
-	result += t + QString("Arc { \n")
-			+ t + QString("\t") + QString("x1: ") + QString::number(x1 / x1mX) + QString(" * ") + QString("parent.width") + QString(" / ") + QString::number(mX / x1mX) + QString("\n")
+	result += t + QString("Arc { \n");
+	if (elem.hasChildNodes()){
+		result += parseShowIf(elem.firstChildElement(), t);
+	}
+	result += t + QString("\t") + QString("x1: ") + QString::number(x1 / x1mX) + QString(" * ") + QString("parent.width") + QString(" / ") + QString::number(mX / x1mX) + QString("\n")
 			+ t + QString("\t") + QString("y1: ") + QString::number(y1 / y1mY) + QString(" * ") + QString("parent.height") + QString(" / ") + QString::number(mY / y1mY) + QString("\n")
 			+ t + QString("\t") + QString("x2: ") + QString::number(x2 / x2mX) + QString(" * ") + QString("parent.width") + QString(" / ") + QString::number(mX / x2mX) + QString("\n")
 			+ t + QString("\t") + QString("y2: ") + QString::number(y2 / y2mY) + QString(" * ") + QString("parent.height") + QString(" / ") + QString::number(mY / y2mY) + QString("\n")
@@ -334,16 +360,69 @@ QString Translator::parsePolygon(QDomElement elem, const QString t, int mX, int 
 	y += elem.attribute("y" + QString::number(n));
 	qDebug() << x.split(",");
 	QString result = t + "Polygon { \n";
-	result += t + QString("\t") + QString("fill: ") + QString("\"") + color + QString("\"") + QString("\n")
-		+ t + QString("\t") + QString("style: ") + QString("\"") + style + QString("\"") + QString("\n")
+	result += t + QString("\t") + QString("fill: ") + QString("\"") + color + QString("\"") + QString("\n");
+	if (elem.hasChildNodes()){
+		result += parseShowIf(elem.firstChildElement(), t);
+	}
+	result += t + QString("\t") + QString("style: ") + QString("\"") + style + QString("\"") + QString("\n")
 		+ t + QString("\t") + QString("width: ") + width + QString("\n")
 		+ t + QString("\t") + QString("color: ") + QString("\"") + stroke + QString("\"") + QString("\n")
 		+ t + QString("\t") + QString("sizex: ") + QString("parent.width") + QString("\n")
 		+ t + QString("\t") + QString("sizey: ") + QString("parent.height") + QString("\n")
 		+ t + QString("\t") + QString("x: ") + QString("\"") + x + QString("\"") + QString("\n")
 		+ t + QString("\t") + QString("y: ") + QString("\"") + y + QString("\"") + QString("\n")
+		+ t + QString("\t") + QString("n: ") + elem.attribute("n") + QString("\n")
 		+ t + QString("} \n");
 	return result;
+}
+
+QString Translator::parseCurve(QDomElement elem, const QString t, int mX, int mY)
+{
+	QString result = "";
+	QString fill = elem.attribute("fill");
+	QString style = elem.attribute("stroke-style");
+	QString color = elem.attribute("stroke");
+	QString width = elem.attribute("stroke-width");
+	result += t + QString("Curve { \n");
+	if (elem.hasChildNodes() && elem.firstChild().nodeName() == "showIf"){
+		result += parseShowIf(elem.firstChildElement(), t);
+	}
+	result += t + QString("\t") + QString("fill: ") + QString("\"") + fill + QString("\"") + QString("\n")
+			+ t + QString("\t") + QString("style: ") + QString("\"") + style + QString("\"") + QString("\n")
+			+ t + QString("\t") + QString("color: ") + QString("\"") + color + QString("\"") + QString("\n")
+			+ t + QString("\t") + QString("sizex: ") + QString("parent.width") + QString("\n")
+			+ t + QString("\t") + QString("sizey: ") + QString("parent.height") + QString("\n")
+			+ t + QString("\t") + QString("width: ") + width + QString("\n");
+	return result;
+}
+
+QString Translator::parseStart(QDomElement elem, const QString t)
+{
+	QString result = "";
+	result += t + QString("\t") + QString("startx: ") + elem.attribute("startx") + QString("\n")
+			+ t + QString("\t") + QString("starty: ") + elem.attribute("starty") + QString("\n");
+	return result;
+}
+
+QString Translator::parseCtrl(QDomElement elem, const QString t)
+{
+	QString result = "";
+	result += t + QString("\t") + QString("x: ") + elem.attribute("x") + QString("\n")
+			+ t + QString("\t") + QString("y: ") + elem.attribute("y") + QString("\n");
+	return result;
+}
+
+QString Translator::parseEnd(QDomElement elem, const QString t)
+{
+	QString result = "";
+	result += t + QString("\t") + QString("endx: ") + elem.attribute("endx") + QString("\n")
+			+ t + QString("\t") + QString("endy: ") + elem.attribute("endy") + QString("\n");
+	return result;
+}
+
+QString Translator::parseShowIf(QDomElement elem, QString t)
+{
+	return (t + QString("\t") + QString("visible: models.getProperties(ids, ") + QString("\"") + elem.attribute("property") + QString("\")") + elem.attribute("sign") +QString("= ") + QString("\"") + elem.attribute("value") + QString("\"") + QString("\n"));
 }
 
 int Translator::gcd(int a, int b)

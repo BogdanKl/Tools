@@ -20,7 +20,12 @@ private:
 	QString parsePath(QDomElement elem, QString t, int mX, int mY);
 	QString parseGraphics(QDomElement elem, QString const t);
 	QString parsePolygon(QDomElement elem, QString const t, int mX, int mY);
+	QString parseCurve(QDomElement elem, QString const t, int mX, int mY);
+	QString parseStart(QDomElement elem, QString const t);
+	QString parseEnd(QDomElement elem, QString const t);
+	QString parseCtrl(QDomElement elem, QString const t);
 	QString parseG(QDomElement elem, QString const t);
+	QString parseShowIf(QDomElement elem, QString t);
 	int gcd(int a, int b);
 };
 

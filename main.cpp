@@ -18,7 +18,7 @@ int main(int argc, char *argv[])
 	qmlRegisterType<qmlTypes::DeclarativePen>("CustomComponents", 1, 0,"Border");*/
 	//QDeclarativeComponent component(QDeclarativeEngine());
 	//QDomDocument doc("example.xml");
-	QFile file("meta.xml");
+	QFile file("be.xml");
 	if (!file.open(QIODevice::ReadOnly | QIODevice::Text))
 		return 0;
 
